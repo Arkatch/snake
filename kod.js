@@ -1,18 +1,21 @@
 /*Obiekty sterowania*/
-//Przechowują naciśnięte przyciski
-var mapDOWN = 0, mapPRESS = {}, mapUP = {};
+var mapDOWN = 0, mapPRESS = {}, mapUP = {}, leftRightClick = true, upTopClick = true, oneTimeL = false;
+
 
 /*Zmienne węża*/
 var snakeHead = {}, snakeBody = [], snakeSpeed = 10, snakeLength = 2;
 
 /*Zmienne jedzenia*/
-var foodBlock = {}, posFoodX = Math.floor(Math.random()*620)+11, posFoodY = Math.floor(Math.random()*520)+11;
+var foodBlock = {}, posFoodX = Math.floor(Math.random()*610)+25, posFoodY = Math.floor(Math.random()*485)+25;
 
 /*inne*/
 var info = {}, points = snakeLength-snakeLength, crashFood = [];
 
 /*Frame rate = (1000/fraRate)*/
 var fraRate = 50;
+
+//Generate obj
+
 
 var myGameArea = {
     canvas 	: document.createElement("canvas"),
@@ -37,16 +40,22 @@ var myGameArea = {
     },
 	stop  : function(){
 				clearInterval(myGameArea.interval);
+				let scoreVAR = myGameArea.context;
+				let Myscore = "KONIEC GRY";
+				scoreVAR.font = "60px Arial"
+				scoreVAR.fillStyle = "white"
+				scoreVAR.fillText(Myscore, 150, 615);
 	}
 }
 
 function updateGameArea(){
 /*Odświeżanie elementów*/
 	myGameArea.clear();
-	info.create();
+	
 	for(var i = 0, j = crashFood.length;i<j;i++){
 		crashFood[i].create();
 	}
+	info.create();
 	foodNew();
 	control();
 	
@@ -73,16 +82,21 @@ function updateGameArea(){
 function addObject(){
 	/*Dodawanie obiektów*/
 	myGameArea.start();
-	snakeHead = new hero(10, 10, 300, 340, "green");
-	snakeBody[0] = new hero(10, 10, 290, snakeHead.y, "blue");
-	foodBlock = new food(20, 20, posFoodX, posFoodY, "red");
+	let xy = myGameArea.canvas.width;
+	let yx = myGameArea.canvas.height;
 	
-	crashFood[0] = new food(11, 200, 0, 0, "white");
-	crashFood[1] = new food(11, 200, 0, 340, "white");
+	let crashObjLength = Math.floor(xy*0.3);
+	
+	snakeHead = new hero(10, 10, (xy*0.5), (yx*0.5), "green");
+	snakeBody[0] = new hero(10, 10, (xy*0.5-10), snakeHead.y, "blue");
+	foodBlock = new food(10, 10, posFoodX, posFoodY, "red");
+	
+	crashFood[0] = new food(11, crashObjLength, 0, 0, "white");
+	crashFood[1] = new food(11, crashObjLength, 0, 340, "white");
 	crashFood[2] = new food(265, 11, 0, 0, "white");
 	crashFood[3] = new food(265, 11, 405, 0, "white");
-	crashFood[4] = new food(11, 200, 659, 0, "white");
-	crashFood[5] = new food(11, 200, 659, 340, "white");
+	crashFood[4] = new food(11, crashObjLength, 659, 0, "white");
+	crashFood[5] = new food(11, crashObjLength, 659, 340, "white");
 	crashFood[6] = new food(265, 11, 0, 529, "white");
 	crashFood[7] = new food(265, 11, 405, 529, "white");
 	
@@ -157,24 +171,35 @@ function control(){
 	
 	//Sterowanie strzalkami/////////////////
 		/*left*/
-    if (myGameArea.key == 37){
+    if (myGameArea.key == 37 && leftRightClick && oneTimeL){
 		snakeHead.speedY = 0;
 		snakeHead.speedX = -snakeSpeed;
+		leftRightClick = false;
+		upTopClick = true;
 	}
 		/*right*/
-	if (myGameArea.key == 39){
+	if (myGameArea.key == 39 && leftRightClick){
 		snakeHead.speedY = 0;
 		snakeHead.speedX = snakeSpeed;
+		leftRightClick = false;
+		upTopClick = true;
+		oneTimeL = true;
 	}
 		/*up*/
-    if (myGameArea.key == 38){
+    if (myGameArea.key == 38 && upTopClick){
 		snakeHead.speedX = 0;
 		snakeHead.speedY = -snakeSpeed;
+		leftRightClick = true;
+		upTopClick = false;
+		oneTimeL = true;
 	}
 		/*down*/
-    if (myGameArea.key == 40){
+    if (myGameArea.key == 40 && upTopClick){
 		snakeHead.speedX = 0;
 		snakeHead.speedY = snakeSpeed;
+		leftRightClick = true;
+		upTopClick = false;
+		oneTimeL = true;
 	}
 	//////////////////////////////////////
 
@@ -184,13 +209,15 @@ function control(){
 			snakeBody[i].x = oldX[i];
 			}
 	}
+	
+	//if(!oneTimeL){}
 }
 
 function foodNew(){
 	if(crashTest(foodBlock, snakeHead)){
-		posFoodX = Math.floor(Math.random()*610)+21;
-		posFoodY = Math.floor(Math.random()*500)+21;
-		foodBlock = new food(20, 20, posFoodX, posFoodY, "red");
+		posFoodX = Math.floor(Math.random()*610)+25;
+		posFoodY = Math.floor(Math.random()*485)+25;
+		foodBlock = new food(10, 10, posFoodX, posFoodY, "red");
 		snakeBody[snakeLength] = new hero(10, 10, snakeBody[snakeLength-1].x-10, snakeBody[snakeLength-1].y, "blue");
 		++snakeLength;
 		++points;
